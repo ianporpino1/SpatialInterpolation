@@ -42,6 +42,8 @@ public class Main {
             e.printStackTrace();
         }
 
+        List<Double> results = new ArrayList<>();
+
         long startTime = System.nanoTime();
 
         int numThreads = Runtime.getRuntime().availableProcessors();
@@ -62,7 +64,10 @@ public class Main {
             List<Double> subYUnknown = y_unknown.subList(startIndex, endIndex);
 
             Runnable r = () -> {
-                SpatialInterpolation.inverseDistanceWeighting(x_known, y_known, z_known, subXUnknown, subYUnknown, 2.0);
+                List<Double> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(x_known, y_known, z_known, subXUnknown, subYUnknown, 2.0);
+                synchronized (results) {
+                    results.addAll(0, z_interpolated);
+                }
             };
 
             var builder = Thread.ofPlatform();
@@ -85,6 +90,9 @@ public class Main {
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
+        for (double val : results) {
+            System.out.println(val);
+        }
 
     }
 }
