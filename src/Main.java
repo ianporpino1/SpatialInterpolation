@@ -50,14 +50,14 @@ public class Main {
         List<Thread> threads = new ArrayList<>(numThreads);
 
         int totalPoints = x_unknown.size();
-        int pointsPerThread = totalPoints / numThreads; // Pontos por thread
+        int pointsPerThread = totalPoints / numThreads;
         int extraPoints = totalPoints % numThreads;
 
         int startIndex = 0;
         for (int i = 0; i < numThreads; i++) {
             int endIndex = startIndex + pointsPerThread;
             if (i < extraPoints) {
-                endIndex++; // Adiciona um ponto extra para as primeiras threads
+                endIndex++;
             }
 
             List<Double> subXUnknown = x_unknown.subList(startIndex, endIndex);
