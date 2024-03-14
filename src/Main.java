@@ -70,7 +70,7 @@ public class Main {
                 }
             };
 
-            var builder = Thread.ofPlatform();
+            var builder = Thread.ofVirtual();
             Thread thread = builder.start(r);
             threads.add(thread);
 
