@@ -54,9 +54,9 @@ public class Main {
             int finalI = i;
             Runnable r = () -> {
                 List<Double> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(x_known, y_known, z_known, Collections.singletonList(x_unknown.get(finalI)), Collections.singletonList(y_unknown.get(finalI)), 2.0);
-
-                results.addAll(0, z_interpolated);
-
+                synchronized (results) {
+                    results.addAll(0, z_interpolated);
+                }
             };
 
             var builder = Thread.ofVirtual().name(String.valueOf(i));
