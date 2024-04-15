@@ -65,9 +65,9 @@ public class Main {
 
             Runnable r = () -> {
                 List<Double> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(x_known, y_known, z_known, subXUnknown, subYUnknown, 2.0);
-                synchronized (results) {
-                    results.addAll(0, z_interpolated);
-                }
+
+                results.addAll(0, z_interpolated);
+
             };
 
             var builder = Thread.ofPlatform();
