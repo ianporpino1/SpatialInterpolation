@@ -12,35 +12,14 @@ public class Main {
         List<Double> z_known = new ArrayList<>();
         //long startTime = System.nanoTime();
 
-        try (BufferedReader br = new BufferedReader(new FileReader(fileKnownPoints))) {
-            br.readLine();
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
-                x_known.add(Double.parseDouble(parts[0]));
-                y_known.add(Double.parseDouble(parts[1]));
-                z_known.add(Double.parseDouble(parts[2]));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        readPoints(fileKnownPoints, x_known, y_known, z_known);
+
         String fileUnknownPoints = "src/data/unknown_points.csv";
         List<Double> x_unknown = new ArrayList<>();
         List<Double> y_unknown = new ArrayList<>();
 
-        try (BufferedReader br = new BufferedReader(new FileReader(fileUnknownPoints))) {
-            br.readLine();
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
-                x_unknown.add(Double.parseDouble(parts[0]));
-                y_unknown.add(Double.parseDouble(parts[1]));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-
+        readPoints(fileUnknownPoints, x_unknown, y_unknown, null);
 
         long startTime = System.nanoTime(); //conta somente o tempo do algoritmo
 
@@ -56,4 +35,22 @@ public class Main {
            System.out.println(val);
        }
     }
+    public static void readPoints(String filePath, List<Double> xList, List<Double> yList, List<Double> zList) {
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            br.readLine();
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                xList.add(Double.parseDouble(parts[0]));
+                yList.add(Double.parseDouble(parts[1]));
+                if (zList != null && parts.length > 2) {
+                    zList.add(Double.parseDouble(parts[2]));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }
