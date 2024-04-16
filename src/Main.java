@@ -10,7 +10,6 @@ public class Main {
         List<Double> x_known = new ArrayList<>();
         List<Double> y_known = new ArrayList<>();
         List<Double> z_known = new ArrayList<>();
-        //long startTime = System.nanoTime();
 
         readPoints(fileKnownPoints, x_known, y_known, z_known);
 
@@ -18,18 +17,10 @@ public class Main {
         List<Double> x_unknown = new ArrayList<>();
         List<Double> y_unknown = new ArrayList<>();
 
-
         readPoints(fileUnknownPoints, x_unknown, y_unknown, null);
 
-        long startTime = System.nanoTime(); //conta somente o tempo do algoritmo
 
         List<Double> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(x_known, y_known, z_known, x_unknown, y_unknown, 2.0);
-
-        long endTime = System.nanoTime();
-
-        double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 7min
-
-        System.out.println("Tempo de execução: " + duration + " segundos");
 
        for (double val : z_interpolated) {
            System.out.println(val);
