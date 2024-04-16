@@ -19,7 +19,6 @@ public class Main {
 
         readPoints(fileUnknownPoints, x_unknown, y_unknown, null);
 
-
         List<Double> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(x_known, y_known, z_known, x_unknown, y_unknown, 2.0);
 
        for (double val : z_interpolated) {
