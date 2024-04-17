@@ -19,7 +19,7 @@ public class Main {
 
         long startTime = System.nanoTime();
 
-        int numThreads = unknown_points.size();
+        int numThreads = Runtime.getRuntime().availableProcessors();
         List<Thread> threads = new ArrayList<>(numThreads);
 
         int totalPoints = unknown_points.size();
