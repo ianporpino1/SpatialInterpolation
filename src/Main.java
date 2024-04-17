@@ -3,11 +3,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class Main {
-
     public static void main(String[] args) {
         String fileKnownPoints = "src/data/known_points.csv";
         List<Point> known_points = new ArrayList<>();
@@ -21,27 +19,40 @@ public class Main {
 
         long startTime = System.nanoTime();
 
-        int numThreads = unknown_points.size();
+        int numThreads = Runtime.getRuntime().availableProcessors();
         List<Thread> threads = new ArrayList<>(numThreads);
 
-        for (int i = 0; i < numThreads; i++) {
-            int finalI = i;
-            Runnable r = () -> {
-                List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, Collections.singletonList(unknown_points.get(finalI)), 2.0);
+        int totalPoints = unknown_points.size();
+        int pointsPerThread = totalPoints / numThreads;
+        int extraPoints = totalPoints % numThreads;
 
-                results.addAll(z_interpolated);
+        int startIndex = 0;
+        for (int i = 0; i < numThreads; i++) {
+            int endIndex = startIndex + pointsPerThread;
+            if (i < extraPoints) {
+                endIndex++;
+            }
+
+            List<Point> subUnknown = unknown_points.subList(startIndex, endIndex);
+
+            Runnable r = () -> {
+                List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0);
+
+                synchronized (results){
+                    results.addAll(0, z_interpolated);
+                }
+
             };
 
-            var builder = Thread.ofVirtual().name(String.valueOf(i));
-
+            var builder = Thread.ofPlatform();
             Thread thread = builder.start(r);
-
             threads.add(thread);
+
+            startIndex = endIndex;
         }
         for (Thread thread : threads) {
             try {
                 thread.join();
-
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -49,15 +60,12 @@ public class Main {
 
         long endTime = System.nanoTime();
 
-        double  duration = (endTime - startTime) / 1e9; //96seg
+        double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 113seg
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
-
-        int i=0;
         for (Point val : results) {
-            System.out.println("Ponto " + i + " : " + val);
-            i++;
+            System.out.println(val);
         }
 
     }
@@ -81,4 +89,6 @@ public class Main {
             e.printStackTrace();
         }
     }
+
+
 }
