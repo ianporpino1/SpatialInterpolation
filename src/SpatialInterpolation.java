@@ -2,19 +2,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SpatialInterpolation {
-    public static List<Double> inverseDistanceWeighting(List<Double> x_known, List<Double> y_known, List<Double> z_known, List<Double> x_unknown, List<Double> y_unknown, double power) {
-        List<Double> z_unknown = new ArrayList<>(x_unknown.size());
-        for (int i = 0; i < x_unknown.size(); i++) {
+
+    public static List<Point> inverseDistanceWeighting(List<Point> known, List<Point> unknown, double power) {
+        List<Point> interpolated_points = new ArrayList<>(unknown.size());
+        for (Point u : unknown) {
             double sumWeights = 0.0;
             double sumWeightedValues = 0.0;
-            for (int j = 0; j < x_known.size(); j++) {
-                double distance = Math.sqrt(Math.pow(x_known.get(j) - x_unknown.get(i), 2) + Math.pow(y_known.get(j) - y_unknown.get(i), 2));
+            for (Point k : known) {
+                double distance = Math.sqrt(Math.pow(k.x() - u.x(), 2) + Math.pow(k.y() - u.y(), 2));
                 double weight = 1.0 / Math.pow(distance, power);
                 sumWeights += weight;
-                sumWeightedValues += weight * z_known.get(j);
+                sumWeightedValues += weight * k.z();
             }
-            z_unknown.add(sumWeightedValues / sumWeights);
+            Point p = new Point(u.x(), u.y(), sumWeightedValues / sumWeights);
+            interpolated_points.add(p);
         }
-        return z_unknown;
+        return interpolated_points;
     }
 }
