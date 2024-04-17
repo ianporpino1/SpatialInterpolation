@@ -29,12 +29,13 @@ public class Main {
             Runnable r = () -> {
                 List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, Collections.singletonList(unknown_points.get(finalI)), 2.0);
 
-                results.addAll(0, z_interpolated);
-
+                results.addAll(z_interpolated);
             };
 
             var builder = Thread.ofVirtual().name(String.valueOf(i));
+
             Thread thread = builder.start(r);
+
             threads.add(thread);
         }
         for (Thread thread : threads) {
@@ -52,8 +53,11 @@ public class Main {
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
+
+        int i=0;
         for (Point val : results) {
-            System.out.println(val);
+            System.out.println("Ponto " + i + " : " + val);
+            i++;
         }
 
     }
