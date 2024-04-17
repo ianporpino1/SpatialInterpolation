@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
+    static volatile List<Point> results = new ArrayList<>();
     public static void main(String[] args) {
         String fileKnownPoints = "src/data/known_points.csv";
         List<Point> known_points = new ArrayList<>();
@@ -15,7 +16,7 @@ public class Main {
         List<Point> unknown_points = new ArrayList<>();
         readPoints(fileUnknownPoints, unknown_points,false);
 
-        List<Point> results = new ArrayList<>();
+
 
         long startTime = System.nanoTime();
 
@@ -38,9 +39,7 @@ public class Main {
             Runnable r = () -> {
                 List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0);
 
-                synchronized (results){
-                    results.addAll(0, z_interpolated);
-                }
+                results.addAll(0, z_interpolated);
 
             };
 
