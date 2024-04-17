@@ -1,1 +1,2 @@
-public record Point(Double x, Double y, Double z) { }
+public record Point(Double x, Double y, Double z) {
+}
