@@ -8,29 +8,21 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         String fileKnownPoints = "src/data/known_points.csv";
-        List<Double> x_known = new ArrayList<>();
-        List<Double> y_known = new ArrayList<>();
-        List<Double> z_known = new ArrayList<>();
-        //long startTime = System.nanoTime();
-
-        readPoints(fileKnownPoints, x_known, y_known, z_known);
-
+        List<Point> known_points = new ArrayList<>();
+        readPoints(fileKnownPoints, known_points, true);
 
         String fileUnknownPoints = "src/data/unknown_points.csv";
-        List<Double> x_unknown = new ArrayList<>();
-        List<Double> y_unknown = new ArrayList<>();
+        List<Point> unknown_points = new ArrayList<>();
+        readPoints(fileUnknownPoints, unknown_points,false);
 
-        readPoints(fileUnknownPoints, x_unknown, y_unknown, null);
-
-
-        List<Double> results = new ArrayList<>();
+        List<Point> results = new ArrayList<>();
 
         long startTime = System.nanoTime();
 
-        int numThreads = Runtime.getRuntime().availableProcessors();
+        int numThreads = unknown_points.size();
         List<Thread> threads = new ArrayList<>(numThreads);
 
-        int totalPoints = x_unknown.size();
+        int totalPoints = unknown_points.size();
         int pointsPerThread = totalPoints / numThreads;
         int extraPoints = totalPoints % numThreads;
 
@@ -41,11 +33,10 @@ public class Main {
                 endIndex++;
             }
 
-            List<Double> subXUnknown = x_unknown.subList(startIndex, endIndex);
-            List<Double> subYUnknown = y_unknown.subList(startIndex, endIndex);
+            List<Point> subUnknown = unknown_points.subList(startIndex, endIndex);
 
             Runnable r = () -> {
-                List<Double> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(x_known, y_known, z_known, subXUnknown, subYUnknown, 2.0);
+                List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0);
 
                 results.addAll(0, z_interpolated);
 
@@ -71,23 +62,26 @@ public class Main {
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
-        for (double val : results) {
+        for (Point val : results) {
             System.out.println(val);
         }
 
     }
 
-    public static void readPoints(String filePath, List<Double> xList, List<Double> yList, List<Double> zList) {
+    public static void readPoints(String filePath, List<Point> points, Boolean flag) {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            br.readLine();
+            br.readLine(); // Ignora a primeira linha (se for um cabeçalho)
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
-                xList.add(Double.parseDouble(parts[0]));
-                yList.add(Double.parseDouble(parts[1]));
-                if (zList != null && parts.length > 2) {
-                    zList.add(Double.parseDouble(parts[2]));
+                Point point;
+                if(flag){
+                    point = new Point(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]),Double.parseDouble(parts[2]));
                 }
+                else {
+                    point = new Point(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]),null);
+                }
+                points.add(point);
             }
         } catch (IOException e) {
             e.printStackTrace();
