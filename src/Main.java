@@ -3,6 +3,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Main {
@@ -19,34 +20,21 @@ public class Main {
 
         long startTime = System.nanoTime();
 
-        int numThreads = Runtime.getRuntime().availableProcessors();
+        int numThreads = unknown_points.size();
         List<Thread> threads = new ArrayList<>(numThreads);
 
-        int totalPoints = unknown_points.size();
-        int pointsPerThread = totalPoints / numThreads;
-        int extraPoints = totalPoints % numThreads;
-
-        int startIndex = 0;
         for (int i = 0; i < numThreads; i++) {
-            int endIndex = startIndex + pointsPerThread;
-            if (i < extraPoints) {
-                endIndex++;
-            }
-
-            List<Point> subUnknown = unknown_points.subList(startIndex, endIndex);
+            int finalI = i;
 
             Runnable r = () -> {
-                List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0);
+                List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, Collections.singletonList(unknown_points.get(finalI)), 2.0);
 
                 results.addAll(0, z_interpolated);
-
             };
 
             var builder = Thread.ofPlatform();
             Thread thread = builder.start(r);
             threads.add(thread);
-
-            startIndex = endIndex;
         }
         for (Thread thread : threads) {
             try {
