@@ -23,19 +23,20 @@ public class Main {
         int numThreads = unknown_points.size();
         List<Thread> threads = new ArrayList<>(numThreads);
 
-        for (int i = 0; i < numThreads; i++) {
-            int finalI = i;
 
+        for(Point p: unknown_points){
             Runnable r = () -> {
-                List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, Collections.singletonList(unknown_points.get(finalI)), 2.0);
+                Point z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, p, 2.0);
 
-                results.addAll(0, z_interpolated);
+                results.add(z_interpolated);
             };
-
             var builder = Thread.ofPlatform();
             Thread thread = builder.start(r);
             threads.add(thread);
         }
+
+
+
         for (Thread thread : threads) {
             try {
                 thread.join();
