@@ -7,6 +7,9 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
+        
+        long startTime = System.nanoTime();
+        
         String fileKnownPoints = "src/data/known_points.csv";
         List<Point> known_points = new ArrayList<>();
         readPoints(fileKnownPoints, known_points, true);
@@ -17,7 +20,7 @@ public class Main {
 
         List<Point> results = new ArrayList<>();
 
-        long startTime = System.nanoTime();
+        
 
         int numThreads = unknown_points.size();
         List<Thread> threads = new ArrayList<>(numThreads);
@@ -46,7 +49,7 @@ public class Main {
 
         long endTime = System.nanoTime();
 
-        double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 113seg
+        double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 117seg total
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
