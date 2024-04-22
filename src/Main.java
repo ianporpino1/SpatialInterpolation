@@ -8,6 +8,8 @@ import java.util.List;
 public class Main {
     static volatile List<Point> results = new ArrayList<>();
     public static void main(String[] args) {
+        long startTime = System.nanoTime();
+        
         String fileKnownPoints = "src/data/known_points.csv";
         List<Point> known_points = new ArrayList<>();
         readPoints(fileKnownPoints, known_points, true);
@@ -17,38 +19,21 @@ public class Main {
         readPoints(fileUnknownPoints, unknown_points,false);
 
 
-
-        long startTime = System.nanoTime();
-
-        int numThreads = Runtime.getRuntime().availableProcessors();
+        int numThreads = unknown_points.size();
         List<Thread> threads = new ArrayList<>(numThreads);
 
-        int totalPoints = unknown_points.size();
-        int pointsPerThread = totalPoints / numThreads;
-        int extraPoints = totalPoints % numThreads;
-
-        int startIndex = 0;
-        for (int i = 0; i < numThreads; i++) {
-            int endIndex = startIndex + pointsPerThread;
-            if (i < extraPoints) {
-                endIndex++;
-            }
-
-            List<Point> subUnknown = unknown_points.subList(startIndex, endIndex);
-
+        for(Point p: unknown_points){
             Runnable r = () -> {
-                List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0);
-
-                results.addAll(0, z_interpolated);
-
+                Point z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, p, 2.0);
+                
+                results.add(z_interpolated);
+                
             };
-
             var builder = Thread.ofPlatform();
             Thread thread = builder.start(r);
             threads.add(thread);
-
-            startIndex = endIndex;
         }
+        
         for (Thread thread : threads) {
             try {
                 thread.join();
@@ -59,7 +44,7 @@ public class Main {
 
         long endTime = System.nanoTime();
 
-        double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 113seg
+        double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 127seg 12 threads, 118seg 1000 threads
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
