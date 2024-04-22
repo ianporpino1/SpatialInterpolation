@@ -9,6 +9,8 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
+        long startTime = System.nanoTime();
+        
         String fileKnownPoints = "src/data/known_points.csv";
         List<Point> known_points = new ArrayList<>();
         readPoints(fileKnownPoints, known_points, true);
@@ -19,23 +21,19 @@ public class Main {
 
         List<Point> results = new ArrayList<>();
 
-        long startTime = System.nanoTime();
-
         int numThreads = unknown_points.size();
         List<Thread> threads = new ArrayList<>(numThreads);
 
-        for (int i = 0; i < numThreads; i++) {
-            int finalI = i;
+        for(Point p: unknown_points){
             Runnable r = () -> {
-                List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, Collections.singletonList(unknown_points.get(finalI)), 2.0);
+                Point z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, p, 2.0);
 
-                results.addAll(z_interpolated);
+                synchronized (results){
+                    results.add(z_interpolated);
+                }
             };
-
-            var builder = Thread.ofVirtual().name(String.valueOf(i));
-
+            var builder = Thread.ofVirtual();
             Thread thread = builder.start(r);
-
             threads.add(thread);
         }
         for (Thread thread : threads) {
@@ -49,7 +47,7 @@ public class Main {
 
         long endTime = System.nanoTime();
 
-        double  duration = (endTime - startTime) / 1e9; //96seg
+        double  duration = (endTime - startTime) / 1e9; //125seg
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
@@ -64,7 +62,7 @@ public class Main {
 
     public static void readPoints(String filePath, List<Point> points, Boolean flag) {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            br.readLine(); // Ignora a primeira linha (se for um cabeçalho)
+            br.readLine();
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
