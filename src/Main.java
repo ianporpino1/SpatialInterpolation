@@ -20,25 +20,35 @@ public class Main {
 
         List<Point> results = new ArrayList<>();
 
-        
-
-        int numThreads = unknown_points.size();
+        int numThreads = Runtime.getRuntime().availableProcessors();
         List<Thread> threads = new ArrayList<>(numThreads);
 
+        int totalPoints = unknown_points.size();
+        int pointsPerThread = totalPoints / numThreads;
+        int extraPoints = totalPoints % numThreads;
 
-        for(Point p: unknown_points){
+        int startIndex = 0;
+        for (int i = 0; i < numThreads; i++) {
+            int endIndex = startIndex + pointsPerThread;
+            if (i < extraPoints) {
+                endIndex++;
+            }
+
+            List<Point> subUnknown = unknown_points.subList(startIndex, endIndex);
+
             Runnable r = () -> {
-                Point z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, p, 2.0);
+                List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0);
 
-                results.add(z_interpolated);
+                results.addAll(0, z_interpolated);
+
             };
+
             var builder = Thread.ofPlatform();
             Thread thread = builder.start(r);
             threads.add(thread);
+
+            startIndex = endIndex;
         }
-
-
-
         for (Thread thread : threads) {
             try {
                 thread.join();

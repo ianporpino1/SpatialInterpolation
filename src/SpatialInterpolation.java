@@ -3,15 +3,20 @@ import java.util.List;
 
 public class SpatialInterpolation {
 
-    public static Point inverseDistanceWeighting(List<Point> known, Point unknown, double power) {
+    public static List<Point> inverseDistanceWeighting(List<Point> known, List<Point> unknown, double power) {
+        List<Point> interpolated_points = new ArrayList<>(unknown.size());
+        for (Point u : unknown) {
             double sumWeights = 0.0;
             double sumWeightedValues = 0.0;
             for (Point k : known) {
-                double distance = Math.sqrt(Math.pow(k.x() - unknown.x(), 2) + Math.pow(k.y() - unknown.y(), 2));
+                double distance = Math.sqrt(Math.pow(k.x() - u.x(), 2) + Math.pow(k.y() - u.y(), 2));
                 double weight = 1.0 / Math.pow(distance, power);
                 sumWeights += weight;
                 sumWeightedValues += weight * k.z();
             }
-        return new Point(unknown.x(), unknown.y(), sumWeightedValues / sumWeights);
+            Point p = new Point(u.x(), u.y(), sumWeightedValues / sumWeights);
+            interpolated_points.add(p);
+        }
+        return interpolated_points;
     }
 }
