@@ -21,13 +21,11 @@ public class Main {
         List<Point> unknown_points = new ArrayList<>();
         readPoints(fileUnknownPoints, unknown_points,false);
 
-        AtomicReferenceArray<Point> results = new AtomicReferenceArray<>(1000);
-
-        
-
         int numThreads = unknown_points.size();
         List<Thread> threads = new ArrayList<>(numThreads);
 
+        AtomicReferenceArray<Point> results = new AtomicReferenceArray<>(numThreads);
+        
         
         for(int i =0; i< unknown_points.size(); i++){
             int finalI = i;
