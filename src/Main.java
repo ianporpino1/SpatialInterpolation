@@ -59,7 +59,7 @@ public class Main {
 
         long endTime = System.nanoTime();
 
-        double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 122seg total
+        double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 12 threads, 129seg total
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
@@ -71,7 +71,7 @@ public class Main {
 
     public static void readPoints(String filePath, List<Point> points, Boolean flag) {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            br.readLine(); // Ignora a primeira linha (se for um cabeçalho)
+            br.readLine();
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
