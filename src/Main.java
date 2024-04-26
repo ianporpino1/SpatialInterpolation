@@ -5,6 +5,9 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class Main {
     public static void main(String[] args) {
@@ -18,19 +21,20 @@ public class Main {
         List<Point> unknown_points = new ArrayList<>();
         readPoints(fileUnknownPoints, unknown_points,false);
 
-        List<Point> results = new ArrayList<>();
+        AtomicReferenceArray<Point> results = new AtomicReferenceArray<>(1000);
 
         
 
         int numThreads = unknown_points.size();
         List<Thread> threads = new ArrayList<>(numThreads);
 
-
-        for(Point p: unknown_points){
+        
+        for(int i =0; i< unknown_points.size(); i++){
+            int finalI = i;
             Runnable r = () -> {
-                Point z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, p, 2.0);
+                Point z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, unknown_points.get(finalI), 2.0);
 
-                results.add(z_interpolated);
+                results.set(finalI,z_interpolated);
             };
             var builder = Thread.ofPlatform();
             Thread thread = builder.start(r);
@@ -49,12 +53,12 @@ public class Main {
 
         long endTime = System.nanoTime();
 
-        double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 122seg total
+        double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 116seg total
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
-        for (Point val : results) {
-            System.out.println(val);
+        for(int i=0; i< results.length(); i++){
+            System.out.println("Ponto "+ i+ ": " + results.get(i));
         }
 
     }
