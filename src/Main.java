@@ -1,47 +1,65 @@
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.AtomicReferenceArray;
+import java.util.concurrent.atomic.DoubleAccumulator;
 
 public class Main {
     public static void main(String[] args) {
         long startTime = System.nanoTime();
+
+        SpatialInterpolation spatialInterpolation = new SpatialInterpolation();
         
         String fileKnownPoints = "src/data/known_points.csv";
-        List<Point> known_points = new ArrayList<>();
-        readPoints(fileKnownPoints, known_points, true);
+        List<Point> knownPoints = new ArrayList<>();
+        readPoints(fileKnownPoints, knownPoints, true);
 
         String fileUnknownPoints = "src/data/unknown_points.csv";
-        List<Point> unknown_points = new ArrayList<>();
-        readPoints(fileUnknownPoints, unknown_points,false);
+        List<Point> unknownPoints = new ArrayList<>();
+        readPoints(fileUnknownPoints, unknownPoints, false);
 
-        AtomicReferenceArray<Point> results = new AtomicReferenceArray<>(1000);
-
+        List<Point> results = new ArrayList<>();
         
+        System.out.println(unknownPoints.size());
 
-        int numThreads = unknown_points.size();
+        DoubleAccumulator w1 = new DoubleAccumulator(Double::sum, 0L);
+        DoubleAccumulator w2 = new DoubleAccumulator(Double::sum, 0L);
+
+
+        int numThreads = Runtime.getRuntime().availableProcessors();
         List<Thread> threads = new ArrayList<>(numThreads);
 
-        
-        for(int i =0; i< unknown_points.size(); i++){
-            int finalI = i;
-            Runnable r = () -> {
-                Point z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, unknown_points.get(finalI), 2.0);
+        int totalPoints = knownPoints.size();
+        int pointsPerThread = totalPoints / numThreads;
+        int extraPoints = totalPoints % numThreads;
 
-                results.set(finalI,z_interpolated);
-            };
-            var builder = Thread.ofPlatform();
-            Thread thread = builder.start(r);
-            threads.add(thread);
+
+        for (Point unknownPoint : unknownPoints) {
+            int startIndex = 0;
+            for (int i = 0; i < numThreads; i++) {
+                int endIndex = startIndex + pointsPerThread;
+                if (i < extraPoints) {
+                    endIndex++;
+                }
+
+                List<Point> subKnown = knownPoints.subList(startIndex, endIndex);
+                Runnable r = () -> {
+                    List<Double> weights = spatialInterpolation.inverseDistanceWeighting(subKnown, unknownPoint, 2.0);
+
+                    w1.accumulate(weights.getFirst());
+                    w2.accumulate(weights.getLast());
+                
+                };
+                var builder = Thread.ofPlatform();
+                Thread thread = builder.start(r);
+                threads.add(thread);
+            }
+            
+            Point point = new Point(unknownPoint.x(), unknownPoint.y(), w1.get() / w2.get());
+            results.add(point);
         }
-
-
 
         for (Thread thread : threads) {
             try {
@@ -50,14 +68,16 @@ public class Main {
                 e.printStackTrace();
             }
         }
-
+        
         long endTime = System.nanoTime();
 
         double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 116seg total
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
-        for(int i=0; i< results.length(); i++){
+        //System.out.println("Ponto "+ ": " + point);
+
+        for(int i=0; i< results.size(); i++){
             System.out.println("Ponto "+ i+ ": " + results.get(i));
         }
 
