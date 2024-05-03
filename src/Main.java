@@ -6,6 +6,10 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
+        long startTime = System.nanoTime();
+        
+        SpatialInterpolation spatialInterpolation = new SpatialInterpolation();
+        
         String fileKnownPoints = "src/data/known_points.csv";
         List<Point> known_points = new ArrayList<>();
         readPoints(fileKnownPoints, known_points, true);
@@ -14,7 +18,13 @@ public class Main {
         List<Point> unknown_points = new ArrayList<>();
         readPoints(fileUnknownPoints, unknown_points,false);
 
-        List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, unknown_points, 2.0);
+        List<Point> z_interpolated = spatialInterpolation.inverseDistanceWeighting(known_points, unknown_points, 2.0);
+
+        long endTime = System.nanoTime();
+
+        double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 311
+
+        System.out.println("Tempo de execução: " + duration + " segundos");
 
        for (Point val : z_interpolated) {
            System.out.println(val);
