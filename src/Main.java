@@ -24,12 +24,11 @@ public class Main {
         
         System.out.println(unknownPoints.size());
 
-        DoubleAccumulator w1 = new DoubleAccumulator(Double::sum, 0L);
-        DoubleAccumulator w2 = new DoubleAccumulator(Double::sum, 0L);
+        DoubleAccumulator w1 = new DoubleAccumulator(Double::sum, 0.0);
+        DoubleAccumulator w2 = new DoubleAccumulator(Double::sum, 0.0);
 
 
         int numThreads = Runtime.getRuntime().availableProcessors();
-        List<Thread> threads = new ArrayList<>(numThreads);
 
         int totalPoints = knownPoints.size();
         int pointsPerThread = totalPoints / numThreads;
@@ -37,6 +36,7 @@ public class Main {
 
 
         for (Point unknownPoint : unknownPoints) {
+            List<Thread> threads = new ArrayList<>(numThreads);
             int startIndex = 0;
             for (int i = 0; i < numThreads; i++) {
                 int endIndex = startIndex + pointsPerThread;
@@ -55,19 +55,24 @@ public class Main {
                 var builder = Thread.ofPlatform();
                 Thread thread = builder.start(r);
                 threads.add(thread);
+                
+                startIndex = endIndex;
             }
             
             Point point = new Point(unknownPoint.x(), unknownPoint.y(), w1.get() / w2.get());
             results.add(point);
-        }
-
-        for (Thread thread : threads) {
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            
+            w1.reset();
+            w2.reset();
+            for (Thread thread : threads) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
+
         
         long endTime = System.nanoTime();
 
