@@ -58,12 +58,6 @@ public class Main {
                 
                 startIndex = endIndex;
             }
-            
-            Point point = new Point(unknownPoint.x(), unknownPoint.y(), w1.get() / w2.get());
-            results.add(point);
-            
-            w1.reset();
-            w2.reset();
             for (Thread thread : threads) {
                 try {
                     thread.join();
@@ -71,6 +65,11 @@ public class Main {
                     e.printStackTrace();
                 }
             }
+            Point point = new Point(unknownPoint.x(), unknownPoint.y(), w1.get() / w2.get());
+            results.add(point);
+            
+            w1.reset();
+            w2.reset();
         }
 
         
