@@ -17,6 +17,8 @@ public class Main {
         String fileUnknownPoints = "src/data/unknown_points.csv";
         List<Point> unknown_points = new ArrayList<>();
         readPoints(fileUnknownPoints, unknown_points,false);
+        
+        List<Point> results = new ArrayList<>();
 
         ThreadLocal<List<Point>> threadResults = ThreadLocal.withInitial(ArrayList::new);
 
@@ -37,10 +39,11 @@ public class Main {
             List<Point> subUnknown = unknown_points.subList(startIndex, endIndex);
 
             Runnable r = () -> {
+                
                 List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0);
-
-                threadResults.get().addAll(z_interpolated);
-
+                
+                threadResults.set(z_interpolated);
+                results.addAll(threadResults.get());
             };
 
             var builder = Thread.ofPlatform();
@@ -48,6 +51,7 @@ public class Main {
             threads.add(thread);
 
             startIndex = endIndex;
+            
         }
         for (Thread thread : threads) {
             try {
@@ -56,12 +60,7 @@ public class Main {
                 e.printStackTrace();
             }
         }
-
-        for (int i = 0; i < numThreads; i++) {
-            results.addAll(threadResults.get());
-            threadResults.remove();
-        }
-
+        
         long endTime = System.nanoTime();
 
         double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 12 threads, 129seg total
