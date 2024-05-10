@@ -18,7 +18,7 @@ public class Main {
         List<Point> unknown_points = new ArrayList<>();
         readPoints(fileUnknownPoints, unknown_points,false);
 
-        List<Point> results = new ArrayList<>();
+        ThreadLocal<List<Point>> threadResults = ThreadLocal.withInitial(ArrayList::new);
 
         int numThreads = Runtime.getRuntime().availableProcessors();
         List<Thread> threads = new ArrayList<>(numThreads);
@@ -39,7 +39,7 @@ public class Main {
             Runnable r = () -> {
                 List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0);
 
-                results.addAll(0, z_interpolated);
+                threadResults.get().addAll(z_interpolated);
 
             };
 
@@ -55,6 +55,11 @@ public class Main {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        }
+
+        for (int i = 0; i < numThreads; i++) {
+            results.addAll(threadResults.get());
+            threadResults.remove();
         }
 
         long endTime = System.nanoTime();
