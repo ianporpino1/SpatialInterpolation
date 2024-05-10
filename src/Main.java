@@ -39,7 +39,7 @@ public class Main {
             Runnable r = () -> {
                 List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0);
 
-                results.addAll(0, z_interpolated);
+                results.addAll(z_interpolated);
 
             };
 
