@@ -1,3 +1,5 @@
+import jdk.dynalink.beans.StaticClass;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -5,23 +7,27 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.*;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
         long startTime = System.nanoTime();
         
         String fileKnownPoints = "src/data/known_points.csv";
-        List<Point> known_points = new ArrayList<>();
+        final List<Point> known_points = new ArrayList<>();
         readPoints(fileKnownPoints, known_points, true);
 
         String fileUnknownPoints = "src/data/unknown_points.csv";
-        List<Point> unknown_points = new ArrayList<>();
+        final List<Point> unknown_points = new ArrayList<>();
         readPoints(fileUnknownPoints, unknown_points,false);
 
         List<Point> results = new ArrayList<>();
-
+        
+        
         int numThreads = Runtime.getRuntime().availableProcessors();
-        List<Thread> threads = new ArrayList<>(numThreads);
+
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+        List<Callable<List<Point>>> callables = new ArrayList<>();
 
         int totalPoints = unknown_points.size();
         int pointsPerThread = totalPoints / numThreads;
@@ -34,28 +40,17 @@ public class Main {
                 endIndex++;
             }
 
-            List<Point> subUnknown = unknown_points.subList(startIndex, endIndex);
-
-            Runnable r = () -> {
-                List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0);
-
-                results.addAll(z_interpolated);
-
-            };
-
-            var builder = Thread.ofPlatform();
-            Thread thread = builder.start(r);
-            threads.add(thread);
-
-            startIndex = endIndex;
+            final List<Point> subUnknown = unknown_points.subList(startIndex, endIndex);
+            
+            callables.add(() -> SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0));
         }
-        for (Thread thread : threads) {
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        
+        List<Future<List<Point>>> futures = executorService.invokeAll(callables);
+        for(Future<List<Point>> future : futures) {
+            results.addAll(future.get());
         }
+        
+        executorService.shutdown();
 
         long endTime = System.nanoTime();
 
