@@ -4,13 +4,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.DoubleAccumulator;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
         long startTime = System.nanoTime();
-
-        SpatialInterpolation spatialInterpolation = new SpatialInterpolation();
         
         String fileKnownPoints = "src/data/known_points.csv";
         List<Point> knownPoints = new ArrayList<>();
@@ -27,50 +26,47 @@ public class Main {
         DoubleAccumulator w1 = new DoubleAccumulator(Double::sum, 0.0);
         DoubleAccumulator w2 = new DoubleAccumulator(Double::sum, 0.0);
 
-
         int numThreads = Runtime.getRuntime().availableProcessors();
 
+        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
+        
         int totalPoints = knownPoints.size();
         int pointsPerThread = totalPoints / numThreads;
         int extraPoints = totalPoints % numThreads;
 
 
         for (Point unknownPoint : unknownPoints) {
-            List<Thread> threads = new ArrayList<>(numThreads);
             int startIndex = 0;
+            List<Callable<List<Double>>> callables = new ArrayList<>();
+            
             for (int i = 0; i < numThreads; i++) {
                 int endIndex = startIndex + pointsPerThread;
                 if (i < extraPoints) {
                     endIndex++;
                 }
 
-                List<Point> subKnown = knownPoints.subList(startIndex, endIndex);
-                Runnable r = () -> {
-                    List<Double> weights = spatialInterpolation.inverseDistanceWeighting(subKnown, unknownPoint, 2.0);
-
-                    w1.accumulate(weights.getFirst());
-                    w2.accumulate(weights.getLast());
+                final List<Point> subKnown = knownPoints.subList(startIndex, endIndex);
                 
-                };
-                var builder = Thread.ofPlatform();
-                Thread thread = builder.start(r);
-                threads.add(thread);
+                callables.add(() -> SpatialInterpolation.inverseDistanceWeighting(subKnown,unknownPoint,2.0));
                 
                 startIndex = endIndex;
             }
-            for (Thread thread : threads) {
-                try {
-                    thread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            List<Future<List<Double>>> futures = executorService.invokeAll(callables);
+            for (Future<List<Double>> future : futures) {
+                List<Double> weights = future.get();
+                if (weights.size() == 2) {
+                    w1.accumulate(weights.get(0));
+                    w2.accumulate(weights.get(1));
                 }
             }
+            
             Point point = new Point(unknownPoint.x(), unknownPoint.y(), w1.get() / w2.get());
             results.add(point);
             
             w1.reset();
             w2.reset();
         }
+        executorService.shutdown();
 
         
         long endTime = System.nanoTime();

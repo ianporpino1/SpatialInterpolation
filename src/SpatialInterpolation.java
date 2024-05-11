@@ -3,7 +3,7 @@ import java.util.List;
 
 public class SpatialInterpolation {
     
-    public List<Double> inverseDistanceWeighting(List<Point> known, Point unknown, double power) {
+    public static List<Double> inverseDistanceWeighting(List<Point> known, Point unknown, double power) {
         List<Double> weights = new ArrayList<>();
         Double sumWeights = 0.0;
         Double sumWeightedValues = 0.0;
