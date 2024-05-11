@@ -22,8 +22,6 @@ public class Main {
 
         List<Point> results = new ArrayList<>();
         
-        System.out.println(unknownPoints.size());
-
         DoubleAccumulator w1 = new DoubleAccumulator(Double::sum, 0.0);
         DoubleAccumulator w2 = new DoubleAccumulator(Double::sum, 0.0);
 
@@ -75,14 +73,16 @@ public class Main {
         
         long endTime = System.nanoTime();
 
-        double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 116seg total
+        double  duration = (endTime - startTime) / 1e9; 
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
-        //System.out.println("Ponto "+ ": " + point);
+        
 
-        for(int i=0; i< results.size(); i++){
-            System.out.println("Ponto "+ i+ ": " + results.get(i));
+        int i=0;
+        for (Point val : results) {
+            System.out.println(i + ":" + val);
+            i++;
         }
 
     }
