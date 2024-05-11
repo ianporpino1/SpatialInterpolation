@@ -18,7 +18,7 @@ public class Main {
         List<Point> unknown_points = new ArrayList<>();
         readPoints(fileUnknownPoints, unknown_points,false);
 
-        List<Point> z_interpolated = spatialInterpolation.inverseDistanceWeighting(known_points, unknown_points, 2.0);
+        List<Point> results = spatialInterpolation.inverseDistanceWeighting(known_points, unknown_points, 2.0);
 
         long endTime = System.nanoTime();
 
@@ -26,9 +26,11 @@ public class Main {
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
-       for (Point val : z_interpolated) {
-           System.out.println(val);
-       }
+        int i=0;
+        for (Point val : results) {
+            System.out.println(i + ":" + val);
+            i++;
+        }
     }
     public static void readPoints(String filePath, List<Point> points, Boolean flag) {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
