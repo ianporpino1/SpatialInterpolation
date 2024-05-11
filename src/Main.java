@@ -32,12 +32,14 @@ public class Main {
 
         long endTime = System.nanoTime();
 
-        double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 12 threads, 129seg total
+        double  duration = (endTime - startTime) / 1e9; 
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
+        int i=0;
         for (Point val : results) {
-            System.out.println(val);
+            System.out.println(i + ":" + val);
+            i++;
         }
 
     }
