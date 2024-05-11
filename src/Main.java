@@ -53,8 +53,10 @@ public class Main {
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
+        int i=0;
         for (Point val : results) {
-            System.out.println(val);
+            System.out.println(i + ":" + val);
+            i++;
         }
 
     }
