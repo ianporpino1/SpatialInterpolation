@@ -23,31 +23,17 @@ public class Main {
 
         List<Point> results = new ArrayList<>();
         
+        ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
+        List<Callable<Point>> callables = new ArrayList<>();
         
-        int numThreads = Runtime.getRuntime().availableProcessors();
-
-        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
-        List<Callable<List<Point>>> callables = new ArrayList<>();
-
-        int totalPoints = unknown_points.size();
-        int pointsPerThread = totalPoints / numThreads;
-        int extraPoints = totalPoints % numThreads;
-
-        int startIndex = 0;
-        for (int i = 0; i < numThreads; i++) {
-            int endIndex = startIndex + pointsPerThread;
-            if (i < extraPoints) {
-                endIndex++;
-            }
-
-            final List<Point> subUnknown = unknown_points.subList(startIndex, endIndex);
+        for(Point p: unknown_points){
             
-            callables.add(() -> SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0));
+            callables.add(() -> SpatialInterpolation.inverseDistanceWeighting(known_points, p, 2.0));
         }
         
-        List<Future<List<Point>>> futures = executorService.invokeAll(callables);
-        for(Future<List<Point>> future : futures) {
-            results.addAll(future.get());
+        List<Future<Point>> futures = executorService.invokeAll(callables);
+        for(Future<Point> future : futures) {
+            results.add(future.get());
         }
         
         executorService.shutdown();
