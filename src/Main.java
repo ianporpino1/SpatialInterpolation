@@ -21,36 +21,16 @@ public class Main {
         final List<Point> unknown_points = new ArrayList<>();
         readPoints(fileUnknownPoints, unknown_points,false);
 
-        List<Point> results = new ArrayList<>();
-        
-        
-        int numThreads = Runtime.getRuntime().availableProcessors();
+        List<Point> results;
 
-        ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
-        List<Callable<List<Point>>> callables = new ArrayList<>();
 
-        int totalPoints = unknown_points.size();
-        int pointsPerThread = totalPoints / numThreads;
-        int extraPoints = totalPoints % numThreads;
+        ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+        SpatialInterpolationTask task = new SpatialInterpolationTask(known_points, unknown_points);
+        results = forkJoinPool.invoke(task);
 
-        int startIndex = 0;
-        for (int i = 0; i < numThreads; i++) {
-            int endIndex = startIndex + pointsPerThread;
-            if (i < extraPoints) {
-                endIndex++;
-            }
-
-            final List<Point> subUnknown = unknown_points.subList(startIndex, endIndex);
-            
-            callables.add(() -> SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0));
-        }
         
-        List<Future<List<Point>>> futures = executorService.invokeAll(callables);
-        for(Future<List<Point>> future : futures) {
-            results.addAll(future.get());
-        }
-        
-        executorService.shutdown();
+
+        forkJoinPool.shutdown();
 
         long endTime = System.nanoTime();
 
