@@ -24,7 +24,7 @@ public class Main {
         List<Point> results = new ArrayList<>();
         
         
-        int numThreads = Runtime.getRuntime().availableProcessors();
+        int numThreads = Runtime.getRuntime().availableProcessors(); //com 8 eh o melhor
 
         ExecutorService executorService = Executors.newFixedThreadPool(numThreads);
         List<Callable<List<Point>>> callables = new ArrayList<>();
@@ -58,8 +58,10 @@ public class Main {
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
+        int i=0;
         for (Point val : results) {
-            System.out.println(val);
+            System.out.println(i + ":" + val);
+            i++;
         }
 
     }
