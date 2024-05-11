@@ -27,9 +27,7 @@ public class Main {
         ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         SpatialInterpolationTask task = new SpatialInterpolationTask(known_points, unknown_points);
         results = forkJoinPool.invoke(task);
-
         
-
         forkJoinPool.shutdown();
 
         long endTime = System.nanoTime();

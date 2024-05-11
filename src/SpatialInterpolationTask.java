@@ -3,7 +3,7 @@ import java.util.List;
 import java.util.concurrent.RecursiveTask;
 
 public class SpatialInterpolationTask extends RecursiveTask<List<Point>> {
-    private static final int THRESHOLD = 10;
+    private static final int THRESHOLD = 20;
     private final List<Point> knownPoints;
     private final List<Point> unknownPoints;
 
