@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.*;
 
 public class Main {
-    public static void main(String[] args) throws InterruptedException, ExecutionException {
+    public static void main(String[] args) {
         long startTime = System.nanoTime();
         
         String fileKnownPoints = "src/data/known_points.csv";
