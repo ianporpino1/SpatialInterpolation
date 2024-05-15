@@ -43,6 +43,7 @@ public class Main {
             final List<Point> subUnknown = unknown_points.subList(startIndex, endIndex);
             
             callables.add(() -> SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0));
+            startIndex = endIndex;
         }
         
         List<Future<List<Point>>> futures = executorService.invokeAll(callables);
