@@ -20,13 +20,11 @@ public class Main {
         String fileUnknownPoints = "src/data/unknown_points.csv";
         final List<Point> unknown_points = new ArrayList<>();
         readPoints(fileUnknownPoints, unknown_points,false);
-
-        List<Point> results;
-
+        
 
         ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
         SpatialInterpolationTask task = new SpatialInterpolationTask(known_points, unknown_points);
-        results = forkJoinPool.invoke(task);
+        List<Point> results = forkJoinPool.invoke(task);
         
         forkJoinPool.shutdown();
 

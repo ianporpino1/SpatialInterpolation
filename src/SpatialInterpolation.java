@@ -14,8 +14,8 @@ public class SpatialInterpolation {
                 sumWeights += weight;
                 sumWeightedValues += weight * k.z();
             }
-            Point p = new Point(u.x(), u.y(), sumWeightedValues / sumWeights);
-            interpolated_points.add(p);
+            u.setZ(sumWeightedValues/sumWeights);
+            interpolated_points.add(u);
         }
         return interpolated_points;
     }
