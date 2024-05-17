@@ -59,8 +59,8 @@ public class Main {
                 }
             }
             
-            Point point = new Point(unknownPoint.x(), unknownPoint.y(), w1.get() / w2.get());
-            results.add(point);
+            unknownPoint.setZ(w1.get() / w2.get());
+            results.add(unknownPoint);
             
             w1.reset();
             w2.reset();
