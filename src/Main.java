@@ -63,7 +63,7 @@ public class Main {
 
     public static void readPoints(String filePath, List<Point> points, Boolean flag) {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            br.readLine(); // Ignora a primeira linha (se for um cabeçalho)
+            br.readLine();
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
