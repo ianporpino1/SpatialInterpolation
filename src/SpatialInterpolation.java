@@ -1,11 +1,10 @@
-import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class SpatialInterpolation {
 
-    public static List<Point> inverseDistanceWeighting(List<Point> known, List<Point> unknown, double power) {
-        List<Point> interpolated_points = new ArrayList<>(unknown.size());
-        for (Point u : unknown) {
+    public static Function<Point, Point> inverseDistanceWeightingFunction(List<Point> known, double power) {
+        return u -> {
             double sumWeights = 0.0;
             double sumWeightedValues = 0.0;
             for (Point k : known) {
@@ -14,9 +13,8 @@ public class SpatialInterpolation {
                 sumWeights += weight;
                 sumWeightedValues += weight * k.z();
             }
-            Point p = new Point(u.x(), u.y(), sumWeightedValues / sumWeights);
-            interpolated_points.add(p);
-        }
-        return interpolated_points;
+            u.setZ(sumWeightedValues / sumWeights);
+            return u;
+        };
     }
 }

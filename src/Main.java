@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) {
@@ -21,15 +22,11 @@ public class Main {
         final List<Point> unknown_points = new ArrayList<>();
         readPoints(fileUnknownPoints, unknown_points,false);
 
-        List<Point> results;
-
-
-        ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
-        SpatialInterpolationTask task = new SpatialInterpolationTask(known_points, unknown_points);
-        results = forkJoinPool.invoke(task);
+        List<Point> results = unknown_points.parallelStream()
+                .map(SpatialInterpolation.inverseDistanceWeightingFunction(known_points,2.0))
+                .toList();
         
-        forkJoinPool.shutdown();
-
+        
         long endTime = System.nanoTime();
 
         double  duration = (endTime - startTime) / 1e9; 
