@@ -11,7 +11,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
         long startTime = System.nanoTime();
         
         String fileKnownPoints = "src/data/known_points.csv";
@@ -22,9 +22,18 @@ public class Main {
         final List<Point> unknown_points = new ArrayList<>();
         readPoints(fileUnknownPoints, unknown_points,false);
 
-        List<Point> results = unknown_points.parallelStream()
-                .map(SpatialInterpolation.inverseDistanceWeightingFunction(known_points,2.0))
-                .toList();
+        List<Point> results = new ArrayList<>();
+
+        List<CompletableFuture<Point>> futures = new ArrayList<>();
+        for (Point unknown : unknown_points) {
+            CompletableFuture<Point> future = CompletableFuture.supplyAsync(() -> SpatialInterpolation.inverseDistanceWeighting(known_points,unknown,2.0));
+            futures.add(future);
+        }
+
+        
+        for (CompletableFuture<Point> future : futures) {
+            results.add(future.get());
+        }
         
         
         long endTime = System.nanoTime();
