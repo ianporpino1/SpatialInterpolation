@@ -3,13 +3,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.StructuredTaskScope;
 
 public class Main {
     public static void main(String[] args) {
         long startTime = System.nanoTime();
-        
+
         String fileKnownPoints = "src/data/known_points.csv";
         List<Point> known_points = new ArrayList<>();
         readPoints(fileKnownPoints, known_points, true);
@@ -21,43 +23,39 @@ public class Main {
         List<Point> results = new ArrayList<>();
 
         int numThreads = Runtime.getRuntime().availableProcessors();
-        List<Thread> threads = new ArrayList<>(numThreads);
+        var resultArray = new ArrayList<StructuredTaskScope.Subtask >();
 
         int totalPoints = unknown_points.size();
         int pointsPerThread = totalPoints / numThreads;
         int extraPoints = totalPoints % numThreads;
 
         int startIndex = 0;
-        for (int i = 0; i < numThreads; i++) {
-            int endIndex = startIndex + pointsPerThread;
-            if (i < extraPoints) {
-                endIndex++;
-            }
 
-            List<Point> subUnknown = unknown_points.subList(startIndex, endIndex);
-
-            Runnable r = () -> {
-                List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0);
-
-                synchronized (results){
-                    results.addAll(z_interpolated);
+        try(var taskScope = new StructuredTaskScope<>()){
+            for (int i = 0; i < numThreads; i++) {
+                int endIndex = startIndex + pointsPerThread;
+                if (i < extraPoints) {
+                    endIndex++;
                 }
 
-            };
+                List<Point> subUnknown = unknown_points.subList(startIndex, endIndex);
 
-            var builder = Thread.ofPlatform();
-            Thread thread = builder.start(r);
-            threads.add(thread);
 
-            startIndex = endIndex;
-        }
-        for (Thread thread : threads) {
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                var result = taskScope.fork(() -> SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0));
+
+                resultArray.add(result);
+
+                startIndex = endIndex;
             }
+            taskScope.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
+
+        for(StructuredTaskScope.Subtask r: resultArray){
+            results.addAll((Collection<? extends Point>) r.get());
+        }
+
 
         long endTime = System.nanoTime();
 
