@@ -20,6 +20,8 @@ public class Main {
 
         List<Point> results = new ArrayList<>();
 
+        var synchronizedList = Collections.synchronizedList(results);
+
         int numThreads = Runtime.getRuntime().availableProcessors();
         List<Thread> threads = new ArrayList<>(numThreads);
 
@@ -39,9 +41,7 @@ public class Main {
             Runnable r = () -> {
                 List<Point> z_interpolated = SpatialInterpolation.inverseDistanceWeighting(known_points, subUnknown, 2.0);
 
-                synchronized (results){
-                    results.addAll(z_interpolated);
-                }
+                synchronizedList.addAll(z_interpolated);
 
             };
 
@@ -61,12 +61,12 @@ public class Main {
 
         long endTime = System.nanoTime();
 
-        double  duration = (endTime - startTime) / 1e9; //com 1000 pontos desconhecidos e 40 milhoes de pontos conhecidos, 12 threads, 129seg total
+        double  duration = (endTime - startTime) / 1e9;
 
         System.out.println("Tempo de execução: " + duration + " segundos");
 
         int i=0;
-        for (Point val : results) {
+        for (Point val : synchronizedList) {
             System.out.println(i + ":" + val);
             i++;
         }
